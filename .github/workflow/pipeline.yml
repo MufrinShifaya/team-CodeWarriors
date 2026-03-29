@@ -1,35 +1,23 @@
 name: CodeWarriors-pipeline
-
-on:
-  workflow_dispatch
+on: workflow_dispatch
 
 jobs:
-  build:
+  build-jobs:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: checkout code
         uses: actions/checkout@v6
         with:
           ref: main
-      - name: Create PEM file
-        run: |
-          echo "${{ secrets.Warriors6 }}" > code.pem
-          chmod 400 code.pem
 
-      - name: Copy app.py
+      - name: get pem file
         run: |
-          scp -o StrictHostKeyChecking=no -i code.pem app.py ec2-user@65.0.138.6:/home/ec2-user
-
-      - name: Copy requirements.txt
-        run: |
-          scp -o StrictHostKeyChecking=no -i code.pem requirements.txt ec2-user@65.0.138.6:/home/ec2-user
-
-      - name: Run app on EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no -i code.pem ec2-user@65.0.138.6 "cd /home/ec2 -user &&3
-            python3 -m venv venv &&
-            source venv/bin/activate &&
-            pip3 install -r requirements.txt &&
-            python3 app.py
-          "
+          echo "${{secrets.Warriors6}}" > Code.pem
+          chmod 400 Code.pem
+          ls -lrsth
+      - name: cp app.py
+        run: scp -o StrictHostKeyChecking=no -i Code.pem app.py ec2-user@65.0.138.6:/home/ec2-user/
+      - name: cp req.txt
+        run: scp -o StrictHostKeyChecking=no -i Code.pem requirements.txt ec2-user@65.0.138.6:/home/ec2-user/ 
+      - name: run app
+        run: ssh -o StrictHostKeyChecking=no -i Code.pem ec2-user@65.0.138.6 "cd /home/ec2-user && python3 -m venv venv && source venv/bin/activate && pip3 install -r requirements.txt && python3 app.py"
