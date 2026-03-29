@@ -1,0 +1,12 @@
+name: CodeWarriors-pipeline
+on: workflow-dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Use the latest stable version
+      - name: Run a script using the repository's code
+        run: |
+          echo "Now I can access the code in my repo!"
+          # your build/test commands here
