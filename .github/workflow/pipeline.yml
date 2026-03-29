@@ -9,8 +9,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@v6
+        with:
+          ref: main
       - name: Create PEM file
         run: |
           echo "${{ secrets.Warriors6 }}" > code.pem
