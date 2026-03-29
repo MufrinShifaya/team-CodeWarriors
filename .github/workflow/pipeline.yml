@@ -1,12 +1,34 @@
 name: CodeWarriors-pipeline
-on: workflow-dispatch
+
+on:
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Use the latest stable version
-      - name: Run a script using the repository's code
+        uses: actions/checkout@v4
+
+      - name: Create PEM file
         run: |
-          echo "Now I can access the code in my repo!"
-          # your build/test commands here
+          echo "${{ secrets.Warriors6 }}" > code.pem
+          chmod 400 code.pem
+
+      - name: Copy app.py
+        run: |
+          scp -o StrictHostKeyChecking=no -i code.pem app.py ec2-user@65.0.138.6:/home/ec2-user
+
+      - name: Copy requirements.txt
+        run: |
+          scp -o StrictHostKeyChecking=no -i code.pem requirements.txt ec2-user@65.0.138.6:/home/ec2-user
+
+      - name: Run app on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i code.pem ec2-user@65.0.138.6 "
+            python3 -m venv venv &&
+            source venv/bin/activate &&
+            pip3 install -r requirements.txt &&
+            python3 app.py
+          "
