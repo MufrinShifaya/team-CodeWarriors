@@ -1,0 +1,31 @@
+Deployment :
+name: CodeWarriors-pipeline
+on: workflow_dispatch
+
+jobs:
+  build-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: get pem file
+        run: |
+          echo "${{ secrets.warriors_6 }}" > Mufrin05.pem
+          chmod 400 Mufrin05.pem
+          
+      - name: copy app.py
+        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem app.py ec2-user@13.233.166.91:/home/ec2-user/
+
+      - name: copy requirements.txt
+        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem requirements.txt ec2-user@13.233.166.91:/home/ec2-user/
+
+      - name: run application
+        run: |
+          ssh -o StrictHostKeyChecking=no -i Mufrin05.pem ec2-user@13.233.166.91 "
+          cd /home/ec2-user &&
+          python3 -m venv virtualenv &&
+          source virtualenv/bin/activate &&
+          pip3 install -r requirements.txt &&
+          python3 app.py
+          "
