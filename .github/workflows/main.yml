@@ -19,12 +19,12 @@ jobs:
       - name: copy requirements.txt
         run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem requirements.txt ec2-user@13.233.166.91:/home/ec2-user/
 
-      - name: run application
+      - name: deploy using docker
         run: |
           ssh -o StrictHostKeyChecking=no -i Mufrin05.pem ec2-user@13.233.166.91 "
           cd /home/ec2-user &&
-          python3 -m venv virtualenv &&
-          source virtualenv/bin/activate &&
-          pip3 install -r requirements.txt &&
-          python3 app.py
+          docker build -t myapp . &&
+          docker stop myapp || true &&
+          docker rm myapp || true &&
+          docker run -d -p 5001:5001 --name myapp myapp
           "
