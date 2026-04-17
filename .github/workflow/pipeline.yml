@@ -12,12 +12,12 @@ jobs:
 
       - name: get pem file
         run: |
-          echo "${{secrets.warriors_6}}" > Code.pem
-          chmod 400 Code.pem
+          echo "${{secrets.warriors_6}}" > Mufrin05.pem
+          chmod 400 Mufrin05.pem
           ls -lrsth
       - name: cp app.py
-        run: scp -o StrictHostKeyChecking=no -i Code.pem app.py ec2-user@65.0.138.6:/home/ec2-user/
+        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem app.py ec2-user@65.0.138.6:/home/ec2-user/
       - name: cp req.txt
-        run: scp -o StrictHostKeyChecking=no -i Code.pem requirements.txt ec2-user@65.0.138.6:/home/ec2-user/ 
+        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem requirements.txt ec2-user@65.0.138.6:/home/ec2-user/ 
       - name: run app
-        run: ssh -o StrictHostKeyChecking=no -i Code.pem ec2-user@65.0.138.6 "cd /home/ec2-user && python3 -m venv venv && source venv/bin/activate && pip3 install -r requirements.txt && python3 app.py"
+        run: ssh -o StrictHostKeyChecking=no -i Mufrin05.pem ec2-user@65.0.138.6 "cd /home/ec2-user && python3 -m venv venv && source venv/bin/activate && pip3 install -r requirements.txt && python3 app.py"
