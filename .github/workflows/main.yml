@@ -1,4 +1,3 @@
-Deployment :
 name: CodeWarriors-pipeline
 on: workflow_dispatch
 
