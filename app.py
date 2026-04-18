@@ -62,7 +62,7 @@ def login():
     return render_template("login.html")
 
 
-# ---------------- USER DASHBOARD ----------------
+# ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
 def dashboard():
     u = session.get("user")
@@ -74,16 +74,18 @@ def dashboard():
 
 
 # ---------------- DEPOSIT ----------------
-@app.route("/withdraw", methods=["POST"])
-def withdraw():
+@app.route("/deposit", methods=["POST"])
+def deposit():
     u = session["user"]
     amt = int(request.form["amount"])
 
-    if users[u]["balance"] >= amt:
-        users[u]["balance"] -= amt
-        users[u]["transactions"].append(f"Withdraw -{amt}")
+    users[u]["balance"] += amt
+    users[u]["transactions"].append(f"Deposit +{amt}")
+    transactions.append(f"{u} deposited {amt}")
 
     return redirect("/dashboard")
+
+
 # ---------------- WITHDRAW ----------------
 @app.route("/withdraw", methods=["POST"])
 def withdraw():
