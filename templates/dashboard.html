@@ -1,11 +1,15 @@
-<h2>Welcome {{ user.name }}</h2>
+<h2>Welcome {{ user }}</h2>
 
-<p>Account No: {{ acc_no }}</p>
-<p>Balance: {{ user.balance }}</p>
+<h3>Balance: {{ balance }}</h3>
 
-<form method="POST">
-    Amount: <input name="amount">
-
-    <button name="action" value="deposit">Deposit</button>
-    <button name="action" value="withdraw">Withdraw</button>
+<form action="/deposit" method="post">
+    <input type="number" name="amount" placeholder="Enter amount" required>
+    <button type="submit">Deposit</button>
 </form>
+
+<form action="/withdraw" method="post">
+    <input type="number" name="amount" placeholder="Enter amount" required>
+    <button type="submit">Withdraw</button>
+</form>
+
+<a href="/logout">Logout</a>
