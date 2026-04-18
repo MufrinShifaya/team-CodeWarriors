@@ -1,90 +1,122 @@
 from flask import Flask, render_template, request, redirect, session
 
 app = Flask(__name__)
-app.secret_key = "secret"
+app.secret_key = "bank_secret"
 
-# Temporary storage (in-memory)
+# ---------------- DATA ----------------
 users = {}
+transactions = []
 
-# Home (Login Page)
+ADMIN_USER = "admin"
+ADMIN_PASS = "admin123"
+
+
+# ---------------- HOME ----------------
 @app.route("/")
 def home():
+    return redirect("/login")
+
+
+# ---------------- REGISTER ----------------
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        u = request.form["username"]
+        p = request.form["password"]
+
+        if u in users:
+            return "User already exists"
+
+        users[u] = {
+            "password": p,
+            "balance": 0,
+            "transactions": []
+        }
+
+        return redirect("/login")
+
+    return render_template("register.html")
+
+
+# ---------------- LOGIN ----------------
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        u = request.form["username"]
+        p = request.form["password"]
+
+        # ADMIN
+        if u == ADMIN_USER and p == ADMIN_PASS:
+            session["user"] = "admin"
+            session["role"] = "admin"
+            return redirect("/admin")
+
+        # USER
+        if u in users and users[u]["password"] == p:
+            session["user"] = u
+            session["role"] = "user"
+            return redirect("/dashboard")
+
+        return "Invalid login"
+
     return render_template("login.html")
 
-# Create Account
-@app.route("/create", methods=["POST"])
-def create():
-    user = request.form["username"]
-    pwd = request.form["password"]
 
-    if user in users:
-        return "User already exists!"
-
-    users[user] = {
-        "password": pwd,
-        "balance": 1000
-    }
-
-    return "Account Created Successfully!"
-
-# Login
-@app.route("/login", methods=["POST"])
-def login():
-    user = request.form["username"]
-    pwd = request.form["password"]
-
-    if user in users and users[user]["password"] == pwd:
-        session["user"] = user
-        return redirect("/dashboard")
-
-    return "Invalid Login"
-
-# Dashboard
+# ---------------- USER DASHBOARD ----------------
 @app.route("/dashboard")
 def dashboard():
-    if "user" not in session:
-        return redirect("/")
+    u = session.get("user")
 
-    user = session["user"]
-    balance = users[user]["balance"]
+    if not u or session.get("role") != "user":
+        return redirect("/login")
 
-    return render_template("dashboard.html", user=user, balance=balance)
+    return render_template("dashboard.html", user=u, data=users[u])
 
-# Deposit
+
+# ---------------- DEPOSIT ----------------
 @app.route("/deposit", methods=["POST"])
 def deposit():
-    if "user" not in session:
-        return redirect("/")
-
-    user = session["user"]
+    u = session["user"]
     amt = int(request.form["amount"])
 
-    users[user]["balance"] += amt
+    users[u]["balance"] += amt
+    users[u]["transactions"].append(f"Deposit +{amt}")
+    transactions.append(f"{u} deposited {amt}")
 
     return redirect("/dashboard")
 
-# Withdraw
+
+# ---------------- WITHDRAW ----------------
 @app.route("/withdraw", methods=["POST"])
 def withdraw():
-    if "user" not in session:
-        return redirect("/")
-
-    user = session["user"]
+    u = session["user"]
     amt = int(request.form["amount"])
 
-    if users[user]["balance"] < amt:
-        return "Insufficient Balance!"
-
-    users[user]["balance"] -= amt
+    if users[u]["balance"] >= amt:
+        users[u]["balance"] -= amt
+        users[u]["transactions"].append(f"Withdraw -{amt}")
+        transactions.append(f"{u} withdrew {amt}")
+    else:
+        return "Insufficient balance"
 
     return redirect("/dashboard")
 
-# Logout
+
+# ---------------- ADMIN ----------------
+@app.route("/admin")
+def admin():
+    if session.get("role") != "admin":
+        return redirect("/login")
+
+    return render_template("admin.html", users=users, transactions=transactions)
+
+
+# ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("/")
+    return redirect("/login")
 
-# Run App
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)
