@@ -1,72 +1,90 @@
-from flask import Flask, render_template, request, redirect, url_for
-import random
+from flask import Flask, render_template, request, redirect, session
 
 app = Flask(__name__)
+app.secret_key = "secret"
 
-# simple in-memory storage (no database)
-accounts = {}
+# Temporary storage (in-memory)
+users = {}
 
-# Home page
+# Home (Login Page)
 @app.route("/")
 def home():
-    return render_template("index.html")
-
-# Create account
-@app.route("/create", methods=["GET", "POST"])
-def create():
-    if request.method == "POST":
-        name = request.form["name"]
-
-        acc_no = random.randint(100000, 999999)
-
-        accounts[acc_no] = {
-            "name": name,
-            "balance": 1000
-        }
-
-        return f"""
-        <h2>Account Created Successfully 🎉</h2>
-        <p>Your Account Number: <b>{acc_no}</b></p>
-        <a href='/'>Go Home</a>
-        """
-
-    return render_template("create.html")
-
-# Login page
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        acc_no = int(request.form["acc_no"])
-
-        if acc_no in accounts:
-            return redirect(url_for("dashboard", acc_no=acc_no))
-        else:
-            return "Invalid Account ❌"
-
     return render_template("login.html")
 
-# Dashboard (Deposit / Withdraw)
-@app.route("/dashboard/<int:acc_no>", methods=["GET", "POST"])
-def dashboard(acc_no):
-    user = accounts.get(acc_no)
+# Create Account
+@app.route("/create", methods=["POST"])
+def create():
+    user = request.form["username"]
+    pwd = request.form["password"]
 
-    if not user:
-        return "Account not found ❌"
+    if user in users:
+        return "User already exists!"
 
-    if request.method == "POST":
-        amount = float(request.form["amount"])
-        action = request.form["action"]
+    users[user] = {
+        "password": pwd,
+        "balance": 1000
+    }
 
-        if action == "deposit":
-            user["balance"] += amount
+    return "Account Created Successfully!"
 
-        elif action == "withdraw":
-            if user["balance"] >= amount:
-                user["balance"] -= amount
-            else:
-                return "Insufficient Balance ❌"
+# Login
+@app.route("/login", methods=["POST"])
+def login():
+    user = request.form["username"]
+    pwd = request.form["password"]
 
-    return render_template("dashboard.html", user=user, acc_no=acc_no)
+    if user in users and users[user]["password"] == pwd:
+        session["user"] = user
+        return redirect("/dashboard")
 
+    return "Invalid Login"
+
+# Dashboard
+@app.route("/dashboard")
+def dashboard():
+    if "user" not in session:
+        return redirect("/")
+
+    user = session["user"]
+    balance = users[user]["balance"]
+
+    return render_template("dashboard.html", user=user, balance=balance)
+
+# Deposit
+@app.route("/deposit", methods=["POST"])
+def deposit():
+    if "user" not in session:
+        return redirect("/")
+
+    user = session["user"]
+    amt = int(request.form["amount"])
+
+    users[user]["balance"] += amt
+
+    return redirect("/dashboard")
+
+# Withdraw
+@app.route("/withdraw", methods=["POST"])
+def withdraw():
+    if "user" not in session:
+        return redirect("/")
+
+    user = session["user"]
+    amt = int(request.form["amount"])
+
+    if users[user]["balance"] < amt:
+        return "Insufficient Balance!"
+
+    users[user]["balance"] -= amt
+
+    return redirect("/dashboard")
+
+# Logout
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+# Run App
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)
