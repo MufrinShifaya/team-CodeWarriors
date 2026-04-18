@@ -18,7 +18,7 @@ jobs:
           chmod 400 DevOps-key.pem
 
       - name: copy app.py to EC2
-        run: scp -o StrictHostKeyChecking=no -i DevOps-key.pem app.py ec2-user@52.66.201.115/:/home/ec2-user/
+        run: scp -o StrictHostKeyChecking=no -i DevOps-key.pem app.py ec2-user@52.66.201.115:/home/ec2-user/
 
       - name: copy requirements.txt to EC2
         run: scp -o StrictHostKeyChecking=no -i DevOps-key.pem requirements.txt ec2-user@3.111.188.245:/home/ec2-user/
