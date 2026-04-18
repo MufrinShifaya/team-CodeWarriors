@@ -1,1 +1,11 @@
+<h2>Welcome {{ user.name }}</h2>
 
+<p>Account No: {{ acc_no }}</p>
+<p>Balance: {{ user.balance }}</p>
+
+<form method="POST">
+    Amount: <input name="amount">
+
+    <button name="action" value="deposit">Deposit</button>
+    <button name="action" value="withdraw">Withdraw</button>
+</form>
