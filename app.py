@@ -74,18 +74,16 @@ def dashboard():
 
 
 # ---------------- DEPOSIT ----------------
-@app.route("/deposit", methods=["POST"])
-def deposit():
+@app.route("/withdraw", methods=["POST"])
+def withdraw():
     u = session["user"]
     amt = int(request.form["amount"])
 
-    users[u]["balance"] += amt
-    users[u]["transactions"].append(f"Deposit +{amt}")
-    transactions.append(f"{u} deposited {amt}")
+    if users[u]["balance"] >= amt:
+        users[u]["balance"] -= amt
+        users[u]["transactions"].append(f"Withdraw -{amt}")
 
     return redirect("/dashboard")
-
-
 # ---------------- WITHDRAW ----------------
 @app.route("/withdraw", methods=["POST"])
 def withdraw():
