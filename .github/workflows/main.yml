@@ -14,18 +14,18 @@ jobs:
 
       - name: setup pem file
         run: |
-          echo "${{ secrets.mufrin_1710 }}" > Mufrin05.pem
-          chmod 400 Mufrin05.pem
+          echo "${{ secrets.MufrinDev_key17 }}" > DevOps-key.pem
+          chmod 400 DevOps-key.pem
 
       - name: copy app.py to EC2
-        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem app.py ec2-user@3.111.188.245:/home/ec2-user/
+        run: scp -o StrictHostKeyChecking=no -i DevOps-key.pem app.py ec2-user@52.66.201.115/:/home/ec2-user/
 
       - name: copy requirements.txt to EC2
-        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem requirements.txt ec2-user@3.111.188.245:/home/ec2-user/
+        run: scp -o StrictHostKeyChecking=no -i DevOps-key.pem requirements.txt ec2-user@3.111.188.245:/home/ec2-user/
 
       - name: deploy and run app
         run: |
-          ssh -o StrictHostKeyChecking=no -i Mufrin05.pem ec2-user@3.111.188.245 << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i DevOps-key.pem ec2-user@52.66.201.115// << 'EOF'
           cd /home/ec2-user
 
           # stop old app if running
