@@ -14,14 +14,14 @@ jobs:
           chmod 400 Mufrin05.pem
           
       - name: copy app.py
-        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem app.py ec2-user@13.233.166.91:/home/ec2-user/
+        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem app.py ec2-user@3.111.188.245:/home/ec2-user/
 
       - name: copy requirements.txt
-        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem requirements.txt ec2-user@13.233.166.91:/home/ec2-user/
+        run: scp -o StrictHostKeyChecking=no -i Mufrin05.pem requirements.txt ec2-user@3.111.188.245:/home/ec2-user/
 
       - name: run application
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@56.228.27.250 "
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@3.111.188.245 "
           cd /home/ec2-user &&
           python3 -m venv virtualenv &&
           source virtualenv/bin/activate &&
