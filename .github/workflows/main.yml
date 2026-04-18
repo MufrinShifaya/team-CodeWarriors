@@ -10,7 +10,7 @@ jobs:
 
       - name: get pem file
         run: |
-          echo "${{ secrets.mufrin_key }}" > Mufrin05.pem
+          echo "${{ secrets.mufrin_1710 }}" > Mufrin05.pem
           chmod 400 Mufrin05.pem
           
       - name: copy app.py
