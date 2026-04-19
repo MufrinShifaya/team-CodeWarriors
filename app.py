@@ -10,12 +10,10 @@ transactions = []
 ADMIN_USER = "admin"
 ADMIN_PASS = "admin123"
 
-
 # ---------------- HOME ----------------
 @app.route("/")
 def home():
     return redirect("/login")
-
 
 # ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
@@ -29,14 +27,12 @@ def register():
 
         users[u] = {
             "password": p,
-            "balance": 0,
-            "transactions": []
+            "balance": 0
         }
 
         return redirect("/login")
 
     return render_template("register.html")
-
 
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
@@ -45,13 +41,13 @@ def login():
         u = request.form["username"]
         p = request.form["password"]
 
-        # ADMIN
+        # ADMIN LOGIN
         if u == ADMIN_USER and p == ADMIN_PASS:
             session["user"] = u
             session["role"] = "admin"
             return redirect("/admin")
 
-        # USER
+        # USER LOGIN
         if u in users and users[u]["password"] == p:
             session["user"] = u
             session["role"] = "user"
@@ -60,7 +56,6 @@ def login():
         return "Invalid login"
 
     return render_template("login.html")
-
 
 # ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
@@ -72,7 +67,6 @@ def dashboard():
 
     return render_template("dashboard.html", user=u, data=users[u])
 
-
 # ---------------- DEPOSIT ----------------
 @app.route("/deposit", methods=["POST"])
 def deposit():
@@ -80,11 +74,14 @@ def deposit():
     amt = int(request.form["amount"])
 
     users[u]["balance"] += amt
-    users[u]["transactions"].append(f"Deposit +{amt}")
-    transactions.append(f"{u} deposited {amt}")
+
+    transactions.append({
+        "type": "deposit",
+        "user": u,
+        "amount": amt
+    })
 
     return redirect("/dashboard")
-
 
 # ---------------- WITHDRAW ----------------
 @app.route("/withdraw", methods=["POST"])
@@ -94,13 +91,16 @@ def withdraw():
 
     if users[u]["balance"] >= amt:
         users[u]["balance"] -= amt
-        users[u]["transactions"].append(f"Withdraw -{amt}")
-        transactions.append(f"{u} withdrew {amt}")
+
+        transactions.append({
+            "type": "withdraw",
+            "user": u,
+            "amount": amt
+        })
     else:
         return "Insufficient balance"
 
     return redirect("/dashboard")
-
 
 # ---------------- TRANSFER ----------------
 @app.route("/transfer", methods=["POST"])
@@ -122,20 +122,14 @@ def transfer():
     users[sender]["balance"] -= amount
     users[receiver]["balance"] += amount
 
-    users[sender]["transactions"].append(
-        f"Sent ₹{amount} to {receiver}"
-    )
-
-    users[receiver]["transactions"].append(
-        f"Received ₹{amount} from {sender}"
-    )
-
-    transactions.append(
-        f"{sender} sent ₹{amount} to {receiver}"
-    )
+    transactions.append({
+        "type": "transfer",
+        "from": sender,
+        "to": receiver,
+        "amount": amount
+    })
 
     return redirect("/dashboard")
-
 
 # ---------------- USER TRANSACTIONS ----------------
 @app.route("/transactions")
@@ -145,8 +139,13 @@ def user_transactions():
     if not u or session.get("role") != "user":
         return redirect("/login")
 
-    return render_template("transactions.html", data=users[u]["transactions"])
+    user_txns = []
 
+    for t in transactions:
+        if t.get("user") == u or t.get("from") == u or t.get("to") == u:
+            user_txns.append(t)
+
+    return render_template("transactions.html", data=user_txns, user=u)
 
 # ---------------- ADMIN PANEL ----------------
 @app.route("/admin")
@@ -154,8 +153,7 @@ def admin():
     if session.get("role") != "admin":
         return redirect("/login")
 
-    return render_template("admin.html", users=users, transactions=transactions)
-
+    return render_template("admin.html", users=users)
 
 # ---------------- ADMIN TRANSACTIONS ----------------
 @app.route("/admin/transactions")
@@ -165,13 +163,11 @@ def admin_transactions():
 
     return render_template("admin_transactions.html", data=transactions)
 
-
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)
