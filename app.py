@@ -47,7 +47,7 @@ def login():
 
         # ADMIN
         if u == ADMIN_USER and p == ADMIN_PASS:
-            session["user"] = "admin"
+            session["user"] = u
             session["role"] = "admin"
             return redirect("/admin")
 
@@ -76,7 +76,7 @@ def dashboard():
 # ---------------- DEPOSIT ----------------
 @app.route("/deposit", methods=["POST"])
 def deposit():
-    u = session["user"]
+    u = session.get("user")
     amt = int(request.form["amount"])
 
     users[u]["balance"] += amt
@@ -89,7 +89,7 @@ def deposit():
 # ---------------- WITHDRAW ----------------
 @app.route("/withdraw", methods=["POST"])
 def withdraw():
-    u = session["user"]
+    u = session.get("user")
     amt = int(request.form["amount"])
 
     if users[u]["balance"] >= amt:
@@ -102,13 +102,68 @@ def withdraw():
     return redirect("/dashboard")
 
 
-# ---------------- ADMIN ----------------
+# ---------------- TRANSFER ----------------
+@app.route("/transfer", methods=["POST"])
+def transfer():
+    sender = session.get("user")
+
+    if not sender or session.get("role") != "user":
+        return redirect("/login")
+
+    receiver = request.form["receiver"]
+    amount = int(request.form["amount"])
+
+    if receiver not in users:
+        return "Receiver not found"
+
+    if users[sender]["balance"] < amount:
+        return "Insufficient balance"
+
+    users[sender]["balance"] -= amount
+    users[receiver]["balance"] += amount
+
+    users[sender]["transactions"].append(
+        f"Sent ₹{amount} to {receiver}"
+    )
+
+    users[receiver]["transactions"].append(
+        f"Received ₹{amount} from {sender}"
+    )
+
+    transactions.append(
+        f"{sender} sent ₹{amount} to {receiver}"
+    )
+
+    return redirect("/dashboard")
+
+
+# ---------------- USER TRANSACTIONS ----------------
+@app.route("/transactions")
+def user_transactions():
+    u = session.get("user")
+
+    if not u or session.get("role") != "user":
+        return redirect("/login")
+
+    return render_template("transactions.html", data=users[u]["transactions"])
+
+
+# ---------------- ADMIN PANEL ----------------
 @app.route("/admin")
 def admin():
     if session.get("role") != "admin":
         return redirect("/login")
 
     return render_template("admin.html", users=users, transactions=transactions)
+
+
+# ---------------- ADMIN TRANSACTIONS ----------------
+@app.route("/admin/transactions")
+def admin_transactions():
+    if session.get("role") != "admin":
+        return redirect("/login")
+
+    return render_template("admin_transactions.html", data=transactions)
 
 
 # ---------------- LOGOUT ----------------
